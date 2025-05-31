@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm\" src/index.ts",
+    "postinstall": "npm install typescript",
     "build": "tsc -p tsconfig.server.json",
     "start": "node dist/index.js"
   },
