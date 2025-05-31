@@ -24,7 +24,7 @@ const io = new SocketIOServer(server, {
     allowedHeaders: ['Content-Type'],
     credentials: true,
   },
-  transports: ['websocket'],
+ 
 });
 
 connectToMongoDB();
