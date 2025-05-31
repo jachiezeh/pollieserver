@@ -30,18 +30,25 @@ io.on('connection', (socket) => {
     });
     socket.on('submit-vote', async ({ pollId, optionId }) => {
         try {
+            console.log('📥 Received vote:', { pollId, optionId });
             const poll = await PollModel.findById(pollId);
-            if (!poll)
+            if (!poll) {
+                console.warn('⚠️ Poll not found:', pollId);
                 return;
-            const optionIndex = poll.options.findIndex((opt) => opt._id && opt._id.toString() === optionId);
-            if (optionIndex !== -1) {
-                poll.options[optionIndex].votes += 1;
-                await poll.save();
-                io.to(pollId).emit('poll-updated', poll);
             }
+            const optionIndex = poll.options.findIndex((opt) => opt._id?.toString() === optionId);
+            if (optionIndex === -1) {
+                console.warn('⚠️ Option not found in poll:', optionId);
+                return;
+            }
+            poll.options[optionIndex].votes += 1;
+            poll.markModified('options'); // <- necessary to persist subdocument changes
+            await poll.save();
+            console.log(`✅ Vote recorded for option ${optionId} in poll ${pollId}`);
+            io.to(pollId).emit('poll-updated', poll);
         }
         catch (error) {
-            console.error('Vote submission error:', error);
+            console.error('❌ Vote submission error:', error);
         }
     });
     socket.on('create-poll', async (pollData) => {
